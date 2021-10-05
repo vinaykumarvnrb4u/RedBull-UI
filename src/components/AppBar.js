@@ -2,7 +2,7 @@ import React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import logo from '../assets/bull.png';
+import logo from '../assets/redbull.png';
 
 var classes = {
   logo: {
@@ -29,9 +29,9 @@ const TopBar = ({ title }) => {
         <Typography variant="h4" noWrap component="div">
           {title}
         </Typography>
-        {/* <div style={classes.logoHorizontallyCenter}>
+        <div style={classes.logoHorizontallyCenter}>
           <img src={logo} className={classes.logo} alt="logo" />
-        </div> */}
+        </div>
       </Toolbar>
     </AppBar>
   )

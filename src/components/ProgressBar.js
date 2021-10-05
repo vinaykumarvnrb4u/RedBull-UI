@@ -5,7 +5,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 export default function LinearColor() {
   return (
     <Stack sx={{ width: '100%' }} position="fixed">
-      <LinearProgress color="inherit" />
+      <LinearProgress color="inherit" variant="indeterminate"/>
     </Stack>
   );
 }

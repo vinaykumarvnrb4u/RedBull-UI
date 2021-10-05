@@ -38,7 +38,7 @@ export default function ScrollDialog({ dialog, closeModal, data, dialogButtons, 
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        {dialogButtons && dialogButtons.map(b => <Button onClick={b.onClick}>{b.label}</Button>)}
+        {dialogButtons && dialogButtons.map((b,i) => <Button onClick={b.onClick} key={`${b.label}-i`}>{b.label}</Button>)}
       </DialogActions>
     </Dialog>
   );

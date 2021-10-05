@@ -33,22 +33,23 @@ class Home extends Component {
             snackMessage: '',
             snackSeverity: 'success',
             showJson: false,
-            showProgress: false
+            showProgress: false,
+            pageNum: 0
         }
     }
 
-    getDetails = async (currentStatus) => {
+    getDetails = async (currentStatus, pageNum = 0) => {
         try {
             const { states } = this.state;
             this.setState({ showProgress: true });
-            const { jobs, count } = await getData(currentStatus);
+            const { jobs, count } = await getData(currentStatus, pageNum+1);
             const newStates = states.map((s) => {
                 if (s.status === 'pending') s.count = count['wait'];
                 else s.count = count[s.status];
                 return s;
             })
             this.setState({ data: [] });
-            this.setState({ data: jobs.reverse(), states: newStates, showProgress: false });
+            this.setState({ data: jobs, states: newStates, showProgress: false, pageNum });
         } catch (err) {
             this.setState({ err, showProgress: false });
         }
@@ -57,7 +58,7 @@ class Home extends Component {
     componentDidMount() {
         this.getDetails(this.state.currentStatus);
         socket.on('count', (count) => {
-            this.getDetails(this.state.currentStatus);
+            this.getDetails(this.state.currentStatus, this.state.pageNum);
         });
     }
 
@@ -68,7 +69,8 @@ class Home extends Component {
 
     handlecurrentStatus = (e, name) => {
         this.setState({
-            currentStatus: name
+            currentStatus: name,
+            pageNum: 0
         });
     }
 
@@ -76,7 +78,7 @@ class Home extends Component {
         this.setState({ dialog: false });
     }
 
-    handleAction = async (queue, jobId, action) => {
+    handleAction = async (queue, jobId, action, index) => {
         if (!queue || !jobId) return;
         try {
             this.setState({ showProgress: true });
@@ -96,16 +98,31 @@ class Home extends Component {
                 this.setState({
                     snack: true,
                     snackMessage: res.message,
-                    showProgress: false
+                    showProgress: false,
+                    snackSeverity: 'success'
                 });
             } else if (action === 'retry') {
                 this.closeModal();
                 const res = await retryJob(queue, jobId);
-                this.setState({
+                this.setState((prevState) => {
+                    const jobs = [...prevState.data];
+                    jobs.splice(index, 1);
+                    
+                    const states = prevState.states.map(s1 => {
+                        const s = {...s1}
+                        if (s.status === 'pending') s.count += 1;
+                        if (s.status === prevState.currentStatus) s.count -= 1;
+                        return s;
+                    });
+                   
+                    return {
                     snack: true,
                     snackMessage: res.message,
                     snackSeverity: 'success',
-                    showProgress: false
+                    showProgress: false,
+                    data: jobs,
+                    states
+                    }
                 });
             }
         }
@@ -119,11 +136,11 @@ class Home extends Component {
         }
     }
 
-    dialogHandler = (e, queue, jobId, action) => {
+    dialogHandler = (e, queue, jobId, action, index) => {
         const dialogButtons = [
             {
                 label: 'YES',
-                onClick: () => this.handleAction(queue, jobId, action)
+                onClick: () => this.handleAction(queue, jobId, action, index)
             },
             {
                 label: 'NO',
@@ -160,9 +177,15 @@ class Home extends Component {
 
     closeSnack = () => this.setState({ snack: false, snackMessage: '' })
 
+    handleChangePage = (e, pageNum) => {
+        this.getDetails(this.state.currentStatus, pageNum);
+    }
+
     render() {
-        const { currentStatus, data, states, dialog, dialogData, dialogButtons, dialogTitle, snack, snackMessage, snackSeverity, showJson, showProgress } = this.state;
-        const { actions } = states.find(s => s.status === currentStatus);
+        const { currentStatus, data, states, dialog, dialogData, dialogButtons, dialogTitle, snack, snackMessage, snackSeverity, showJson, showProgress, pageNum } = this.state;
+        
+        const { actions, count } = states.find(s => s.status === currentStatus);
+
         return (
             <Box sx={{ display: 'flex' }}>
                 <TopBar title={title} />
@@ -171,7 +194,7 @@ class Home extends Component {
                 <Box component="main" sx={{ flexGrow: 1, mt: 9, ml: 2, mr: 1 }}>
                     {showProgress && <ProgressBar />}
                     <h4>{currentStatus.toUpperCase()}</h4>
-                        <Table data={data} handleAction={this.dialogHandler} actions={actions} />
+                    <Table data={data} handleAction={this.dialogHandler} actions={actions} count={count} handleChangePageNum={this.handleChangePage} page={pageNum}/>
                     <Modal dialog={dialog} data={dialogData} closeModal={this.closeModal} dialogButtons={dialogButtons} showJson={showJson} dialogTitle={dialogTitle} />
                     <SnackAlert snack={snack} snackMessage={snackMessage} snackSeverity={snackSeverity} closeSnack={this.closeSnack} />
                 </Box>

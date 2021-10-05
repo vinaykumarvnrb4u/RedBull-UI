@@ -84,3 +84,5 @@ export const states = [
         icon: () => <DynamicFeedSharpIcon />
     },
 ];
+
+export const limit = 10;
