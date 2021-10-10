@@ -1,8 +1,14 @@
 import io from 'socket.io-client';
+console.log(process.env);
+const { REACT_APP_SOCKET_URL, REACT_APP_ENV } = process.env;
 
-const { REACT_APP_SOCKET_URL } = process.env;
+let socket;
+if (REACT_APP_ENV === 'development') {
+    socket = io.connect(REACT_APP_SOCKET_URL);
+} else { // listen on server port
+    socket = io.connect();
+}
 
-const socket = io(REACT_APP_SOCKET_URL);
 socket.on('connect', () => {
     console.log('connected to socket');
 });
