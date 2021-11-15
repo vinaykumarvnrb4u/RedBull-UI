@@ -41,14 +41,14 @@ class Home extends Component {
         try {
             const { states } = this.state;
             this.setState({ showProgress: true });
-            const { jobs, count } = await getData(currentStatus);
+            const { jobs, count, sizeByCategory } = await getData(currentStatus);
             const newStates = states.map((s) => {
                 if (s.status === 'pending') s.count = count['wait'];
                 else s.count = count[s.status];
                 return s;
             })
-            this.setState({ data: [] });
-            this.setState({ data: jobs.reverse(), states: newStates, showProgress: false });
+            this.setState({ data: {} });
+            this.setState({ data: { sizeByCategory, jobs }, states: newStates, showProgress: false });
         } catch (err) {
             this.setState({ err, showProgress: false });
         }
@@ -171,7 +171,7 @@ class Home extends Component {
                 <Box component="main" sx={{ flexGrow: 1, mt: 9, ml: 2, mr: 1 }}>
                     {showProgress && <ProgressBar />}
                     <h4>{currentStatus.toUpperCase()}</h4>
-                        <Table data={data} handleAction={this.dialogHandler} actions={actions} />
+                    { Object.keys(data).map((key) => <Table data={data[key]} handleAction={this.dialogHandler} actions={ key === 'sizeByCategory' ? [] :actions } keyName={key} />) }
                     <Modal dialog={dialog} data={dialogData} closeModal={this.closeModal} dialogButtons={dialogButtons} showJson={showJson} dialogTitle={dialogTitle} />
                     <SnackAlert snack={snack} snackMessage={snackMessage} snackSeverity={snackSeverity} closeSnack={this.closeSnack} />
                 </Box>

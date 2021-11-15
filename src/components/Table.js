@@ -31,7 +31,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     },
 }));
 
-export default function CustomizedTables({ data, handleAction, actions }) {
+export default function CustomizedTables({ data, handleAction, actions, keyName }) {
     if (!data || !data.length) return <div> NO DATA </div>;
     
     const formatColumns = () => {
@@ -62,10 +62,14 @@ export default function CustomizedTables({ data, handleAction, actions }) {
             <Table sx={{ minWidth: 700 }} stickyHeader aria-label="customized table">
                 <TableHead>
                     <TableRow>
+                        <StyledTableCell align="center" colSpan={columns.length}>
+                            {keyName.toUpperCase()}
+                        </StyledTableCell>
+                    </TableRow>
+                    <TableRow>
                         {columns.map((column) =>
                             <StyledTableCell key={column}> {column.toUpperCase()} </StyledTableCell>
                         )}
-
                     </TableRow>
                 </TableHead>
                 <TableBody>
